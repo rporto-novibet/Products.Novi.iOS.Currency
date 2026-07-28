@@ -73,6 +73,10 @@ open class Currency {
         numberFormatter.currencySymbol = model?.currencySymbol
         numberFormatter.currencyDecimalSeparator = model?.decimalNotation.rawValue
         numberFormatter.currencyGroupingSeparator = model?.groupingNotation.rawValue
+        if let maximumFractionDigits = model?.maximumFractionDigits {
+            numberFormatter.minimumFractionDigits = 0
+            numberFormatter.maximumFractionDigits = maximumFractionDigits
+        }
         numberFormatter.locale = Locale(identifier: languageSysname)
         return numberFormatter.string(from: amountNSNumber)
     }
@@ -108,11 +112,11 @@ open class Currency {
         numberFormatter.currencyDecimalSeparator = model?.decimalNotation.rawValue
         numberFormatter.currencyGroupingSeparator = model?.groupingNotation.rawValue
         numberFormatter.minimumFractionDigits = 0
-        numberFormatter.maximumFractionDigits = 2
+        numberFormatter.maximumFractionDigits = model?.maximumFractionDigits ?? 2
         numberFormatter.locale = Locale(identifier: languageSysname)
         return numberFormatter.string(from: amountNSNumber)
     }
-    
+
     /// Returns the formatted currency string for the given amount with a configurable number of trailing zeroes.
     ///
     /// - Parameters:

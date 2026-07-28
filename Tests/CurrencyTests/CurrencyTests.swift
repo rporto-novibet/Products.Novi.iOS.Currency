@@ -317,6 +317,69 @@ final class CurrencyTests: XCTestCase {
         let currency = Currency(countryCode: "USD", languageSysname: "en_US")
         XCTAssertNil(currency.currencySymbol)
     }
+
+    // MARK: - maximumFractionDigits parsing
+
+    func testMaximumFractionDigitsParsedFromDecimalFormat() {
+        XCTAssertEqual(makeModel(decimalFormat: "%.0f").maximumFractionDigits, 0)
+        XCTAssertEqual(makeModel(decimalFormat: "%.2f").maximumFractionDigits, 2)
+        XCTAssertEqual(makeModel(decimalFormat: "%.3f").maximumFractionDigits, 3)
+        XCTAssertEqual(makeModel(decimalFormat: "%.10f").maximumFractionDigits, 10)
+    }
+
+    func testMaximumFractionDigitsFallsBackToZeroForMalformedFormat() {
+        XCTAssertEqual(makeModel(decimalFormat: "").maximumFractionDigits, 0)
+        XCTAssertEqual(makeModel(decimalFormat: "%f").maximumFractionDigits, 0)
+        XCTAssertEqual(makeModel(decimalFormat: "abc").maximumFractionDigits, 0)
+    }
+
+    func testMaximumFractionDigitsLoadedFromJSON() {
+        let currency = Currency(countryCode: "GR", languageSysname: "el")
+        XCTAssertEqual(currency.model?.maximumFractionDigits, 2)
+    }
+
+    // MARK: - Number of decimal places in formatted output
+
+    func testCurrencyFormatUsesTwoDecimalPlaces() {
+        let currency = makeCurrency(decimalFormat: "%.2f")
+        let result = currency.currencyFormat(amount: 1234.567)
+        XCTAssertEqual(result?.contains(".57"), true)
+    }
+
+    func testCurrencyFormatUsesThreeDecimalPlaces() {
+        let currency = makeCurrency(decimalFormat: "%.3f")
+        let result = currency.currencyFormat(amount: 1234.567)
+        XCTAssertEqual(result?.contains(".567"), true)
+    }
+
+    func testCurrencyFormatUsesZeroDecimalPlaces() {
+        let currency = makeCurrency(decimalFormat: "%.0f")
+        let result = currency.currencyFormat(amount: 1234.4)
+        XCTAssertEqual(result?.contains("."), false, "Zero fraction digits should produce no decimal separator")
+        XCTAssertEqual(result?.contains("1,234"), true)
+    }
+
+    // MARK: - Helpers
+
+    /// Builds a `CurrencyModel` that differs only in its `decimalFormat`, for exercising precision parsing.
+    private func makeModel(decimalFormat: String) -> CurrencyModel {
+        CurrencyModel(
+            countryCode: "GR",
+            currencyCode: "EUR",
+            locale: "en-GR",
+            currencySymbol: "€",
+            symbolPosition: .start,
+            decimalFormat: decimalFormat,
+            decimalNotation: .dot,
+            groupingNotation: .comma,
+            hasCurrencySpace: false
+        )
+    }
+
+    /// Builds a `Currency` backed by a model with the given `decimalFormat`, using dot/comma notation.
+    private func makeCurrency(decimalFormat: String) -> Currency {
+        Currency(currencyModel: makeModel(decimalFormat: decimalFormat))
+    }
 }
 
 class CurrencyMock: Currency {
