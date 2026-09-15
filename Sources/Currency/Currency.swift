@@ -73,9 +73,9 @@ open class Currency {
         numberFormatter.currencySymbol = model?.currencySymbol
         numberFormatter.currencyDecimalSeparator = model?.decimalNotation.rawValue
         numberFormatter.currencyGroupingSeparator = model?.groupingNotation.rawValue
-        if let maximumFractionDigits = model?.maximumFractionDigits {
+        if self.countryCode == "CL" {
             numberFormatter.minimumFractionDigits = 0
-            numberFormatter.maximumFractionDigits = maximumFractionDigits
+            numberFormatter.maximumFractionDigits = 2
         }
         numberFormatter.locale = Locale(identifier: languageSysname)
         return numberFormatter.string(from: amountNSNumber)
